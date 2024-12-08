@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Carousel</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    .carousel {
+      width: 80%;
+      max-width: 600px;
+      aspect-ratio: 3 / 2; /* Keeps the carousel proportional */
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+    .carousel-images {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+    .carousel-images img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Ensures the image fills the container */
+    }
+    .carousel-controls {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      transform: translateY(-50%);
+    }
+    .carousel-button {
+      background: none;
+      border: none;
+      color: blue;
+      font-size: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 0 10px;
+      transition: color 0.3s ease;
+    }
+    .carousel-button:hover {
+      color: darkblue;
+    }
+  </style>
+</head>
+<body>
+  <div class="carousel">
+    <div class="carousel-images">
+      <img src="https://drive.google.com/uc?export=view&id=11z0J4aFn4yVxoXZPCm4uUyIWtrqMhBrr">
+      <img src="https://drive.google.com/uc?export=view&id=1BZDzY4vrEJz5U1SteRSKMvEWVESnpwCh">
+      <img src="https://drive.google.com/uc?export=view&id=1m5vTcJ2m6rOUs7lddVYrQ5N9Os8dlJwu">
+      <img src="https://drive.google.com/uc?export=view&id=12EIBjCvzl9bOXJldhUsDwcQKYgO5eJZV">
+      <img src="https://drive.google.com/uc?export=view&id=1bQfWzQMKBDNeKCbzQfQiFkrt9APGRS0q">
+    </div>
+    <div class="carousel-controls">
+      <button class="carousel-button" id="prev">&#x276E;</button> <!-- Left chevron -->
+      <button class="carousel-button" id="next">&#x276F;</button> <!-- Right chevron -->
+    </div>
+  </div>
+
+  <script>
+    const images = document.querySelector('.carousel-images');
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+
+    let currentIndex = 0;
+    const totalImages = 5; // Number of images in the carousel
+
+    function updateCarousel() {
+      images.style.transform = `translateX(-${currentIndex * 100}%)`;
+    }
+
+    prev.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + totalImages) % totalImages;
+      updateCarousel();
+    });
+
+    next.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % totalImages;
+      updateCarousel();
+    });
+  </script>
+</body>
+</html>
