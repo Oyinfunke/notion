@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Carousel</title>
+  <title>Image Carousel with Progress Bar</title>
   <style>
     body {
       margin: 0;
@@ -58,6 +58,30 @@
     .carousel-button:hover {
       background-color: rgba(0, 0, 180, 0.9);
     }
+
+    .progress-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 10px;
+      position: absolute;
+      bottom: 15px;
+      width: 100%;
+    }
+
+    .progress-dot {
+      width: 12px;
+      height: 12px;
+      margin: 0 5px;
+      background-color: white;
+      border: 2px solid #0000ff;
+      border-radius: 50%;
+      transition: background-color 0.3s ease;
+    }
+
+    .progress-dot.active {
+      background-color: #0000ff;
+    }
   </style>
 </head>
 <body>
@@ -71,17 +95,37 @@
     </div>
     <button class="carousel-button left" onclick="moveSlide(-1)">&#8249;</button>
     <button class="carousel-button right" onclick="moveSlide(1)">&#8250;</button>
+    <div class="progress-bar" id="progress-bar">
+      <!-- Dots will be generated dynamically -->
+    </div>
   </div>
 
   <script>
+    const totalImages = 5; // Total number of images
     let currentIndex = 0;
+
+    // Create progress dots dynamically
+    const progressBar = document.getElementById('progress-bar');
+    for (let i = 0; i < totalImages; i++) {
+      const dot = document.createElement('div');
+      dot.classList.add('progress-dot');
+      if (i === 0) dot.classList.add('active');
+      progressBar.appendChild(dot);
+    }
+
+    function updateProgressBar() {
+      const dots = document.querySelectorAll('.progress-dot');
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentIndex);
+      });
+    }
 
     function moveSlide(direction) {
       const carouselImages = document.getElementById("carousel-images");
-      const totalImages = carouselImages.children.length;
       currentIndex = (currentIndex + direction + totalImages) % totalImages;
       const offset = -currentIndex * 100;
       carouselImages.style.transform = `translateX(${offset}%)`;
+      updateProgressBar();
     }
   </script>
 </body>
