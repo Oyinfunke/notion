@@ -1,9 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Slides Custom Navigation</title>
+<apex:page renderAs="html" standardStylesheets="false">
     <style>
         .slide-container {
             position: relative;
@@ -46,16 +41,21 @@
             display: flex;
             gap: 10px;
             z-index: 10;
+            max-width: 80%;
+            overflow-x: auto;
+            padding: 5px;
         }
 
         .progress-dot {
             width: 12px;
             height: 12px;
+            min-width: 12px;
             border-radius: 50%;
             background-color: white;
             border: 2px solid blue;
             cursor: pointer;
             transition: background-color 0.3s;
+            flex-shrink: 0;
         }
 
         .progress-dot.active {
@@ -69,8 +69,7 @@
             border: none;
         }
     </style>
-</head>
-<body>
+
     <div class="slide-container">
         <div class="slide-navigation">
             <button class="chevron prev-slide" onclick="navigateSlide(-1)">&#10094;</button>
@@ -92,75 +91,65 @@
     </div>
 
     <script>
-        const iframe = document.getElementById('google-slides-iframe');
-        const progressDotsContainer = document.getElementById('progress-dots');
-        const totalSlides = 19;
-        let currentSlide = 0;
+        (function() {
+            var iframe = document.getElementById('google-slides-iframe');
+            var progressDotsContainer = document.getElementById('progress-dots');
+            var totalSlides = 19;
+            var currentSlide = 0;
 
-        // Create progress dots
-        function createProgressDots() {
-            progressDotsContainer.innerHTML = '';
-            for (let i = 0; i < totalSlides; i++) {
-                const dot = document.createElement('div');
-                dot.classList.add('progress-dot');
-                if (i === 0) dot.classList.add('active');
-                dot.setAttribute('data-slide', i);
-                dot.onclick = () => goToSlide(i);
-                progressDotsContainer.appendChild(dot);
-            }
-        }
-
-        // Navigation functions
-        function navigateSlide(direction) {
-            let newSlide = currentSlide + direction;
-            
-            // Implement wrap-around logic
-            if (newSlide < 0) newSlide = totalSlides - 1;
-            if (newSlide >= totalSlides) newSlide = 0;
-            
-            goToSlide(newSlide);
-        }
-
-        function goToSlide(slideNum) {
-            // Send message to Google Slides to navigate
-            iframe.contentWindow.postMessage(
-                JSON.stringify({
-                    "method": "goToSlide",
-                    "args": [slideNum]
-                }), 
-                "*"
-            );
-
-            // Update progress dots
-            const dots = document.querySelectorAll('.progress-dot');
-            dots.forEach(dot => dot.classList.remove('active'));
-            dots[slideNum].classList.add('active');
-
-            currentSlide = slideNum;
-        }
-
-        // Listen for messages from the iframe to track current slide
-        window.addEventListener('message', function(event) {
-            try {
-                const data = JSON.parse(event.data);
-                
-                // Check if this is a slide change event
-                if (data.method === 'onSlideChanged') {
-                    currentSlide = data.args[0];
-                    
-                    // Update progress dots
-                    const dots = document.querySelectorAll('.progress-dot');
-                    dots.forEach(dot => dot.classList.remove('active'));
-                    dots[currentSlide].classList.add('active');
+            // Create progress dots
+            function createProgressDots() {
+                progressDotsContainer.innerHTML = '';
+                for (var i = 0; i < totalSlides; i++) {
+                    var dot = document.createElement('div');
+                    dot.className = 'progress-dot';
+                    if (i === 0) dot.classList.add('active');
+                    dot.setAttribute('data-slide', i);
+                    dot.onclick = (function(index) {
+                        return function() {
+                            goToSlide(index);
+                        };
+                    })(i);
+                    progressDotsContainer.appendChild(dot);
                 }
-            } catch (error) {
-                // Silently catch any parsing errors
-                console.log('Message parsing error:', error);
             }
-        });
 
-        // Initialize progress dots when the page loads
-        window.addEventListener('load', createProgressDots);
+            // Navigation functions
+            function navigateSlide(direction) {
+                var newSlide = currentSlide + direction;
+                
+                // Implement wrap-around logic
+                if (newSlide < 0) newSlide = totalSlides - 1;
+                if (newSlide >= totalSlides) newSlide = 0;
+                
+                goToSlide(newSlide);
+            }
+
+            function goToSlide(slideNum) {
+                // Validate slide number
+                if (slideNum < 0 || slideNum >= totalSlides) return;
+
+                // Update URL to specific slide
+                var baseUrl = iframe.src.split('&')[0];
+                var newUrl = baseUrl + '&slide=' + slideNum;
+                iframe.src = newUrl;
+
+                // Update progress dots
+                var dots = document.querySelectorAll('.progress-dot');
+                dots.forEach(function(dot) {
+                    dot.classList.remove('active');
+                });
+                dots[slideNum].classList.add('active');
+
+                currentSlide = slideNum;
+            }
+
+            // Initialize progress dots when the page loads
+            window.addEventListener('load', createProgressDots);
+
+            // Expose functions globally for Salesforce compatibility
+            window.navigateSlide = navigateSlide;
+            window.goToSlide = goToSlide;
+        })();
     </script>
-</body>
-</html>
+</apex:page>
