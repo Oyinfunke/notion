@@ -1,23 +1,67 @@
-<div class="slide-container" style="position: relative; max-width: 1920px; margin: auto;">
+<div class="slide-container" style="position: relative; max-width: 1920px; margin: auto; background-color: #e7dfdd; padding: 20px;">
     <!-- Google Slides iframe -->
-    <iframe id="google-slides" src="https://docs.google.com/presentation/d/e/2PACX-1vQjySdmK_14lv1zTWGU6oM28pU9meXSvquHSFN2PwPVbD7fO65HuZv-lVH73-3KRA/embed?start=false&loop=false&delayms=3000" 
+    <iframe id="google-slides" 
+            src="https://docs.google.com/presentation/d/e/2PACX-1vQjySdmK_14lv1zTWGU6oM28pU9meXSvquHSFN2PwPVbD7fO65HuZv-lVH73-3KRA/embed?start=false&loop=false&delayms=3000" 
             frameborder="0" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true" 
             style="width: 100%; height: 600px; border: none;">
     </iframe>
 
     <!-- Chevron Navigation -->
-    <div class="chevron chevron-left" onclick="navigateSlide('left')" style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); font-size: 2em; color: #3498db; cursor: pointer;">&#8592;</div>
-    <div class="chevron chevron-right" onclick="navigateSlide('right')" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); font-size: 2em; color: #3498db; cursor: pointer;">&#8594;</div>
+    <div class="chevron chevron-left" onclick="navigateSlide('left')" 
+         style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); font-size: 2.5em; font-weight: bold; color: #3498db; cursor: pointer;">
+        &lt;
+    </div>
+    <div class="chevron chevron-right" onclick="navigateSlide('right')" 
+         style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); font-size: 2.5em; font-weight: bold; color: #3498db; cursor: pointer;">
+        &gt;
+    </div>
 
     <!-- Progress Bar -->
     <div class="progress-bar" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; justify-content: center; align-items: center;">
-        <div class="progress-circle" style="width: 20px; height: 20px; border-radius: 50%; margin: 0 5px; background-color: white; border: 2px solid #3498db;"></div>
-        <div class="progress-circle" style="width: 20px; height: 20px; border-radius: 50%; margin: 0 5px; background-color: white; border: 2px solid #3498db;"></div>
-        <div class="progress-circle" style="width: 20px; height: 20px; border-radius: 50%; margin: 0 5px; background-color: white; border: 2px solid #3498db;"></div>
-        <div class="progress-circle" style="width: 20px; height: 20px; border-radius: 50%; margin: 0 5px; background-color: white; border: 2px solid #3498db;"></div>
-        <div class="progress-circle" style="width: 20px; height: 20px; border-radius: 50%; margin: 0 5px; background-color: white; border: 2px solid #3498db;"></div>
+        <!-- Example for 19 pages -->
+        <!-- Adjust the number of circles here based on the total number of slides -->
+        <div class="progress-circle" style="width: 10px; height: 10px; border-radius: 50%; margin: 0 4px; background-color: white; border: 2px solid #3498db;"></div>
+        <div class="progress-circle" style="width: 10px; height: 10px; border-radius: 50%; margin: 0 4px; background-color: white; border: 2px solid #3498db;"></div>
+        <!-- Repeat this structure for each slide -->
     </div>
 </div>
 
-<!-- External JavaScript (Hosted Externally) -->
-<script src="https://Oyinfunke.github.io/notion/googleSlidesNavigation.js"></script>
+<script>
+    // JavaScript to navigate slides and update the progress bar
+    let currentSlide = 0;
+    const totalSlides = 19; // Update this to match the total number of slides
+
+    function navigateSlide(direction) {
+        const iframe = document.getElementById("google-slides");
+        if (direction === "left" && currentSlide > 0) {
+            currentSlide--;
+        } else if (direction === "right" && currentSlide < totalSlides - 1) {
+            currentSlide++;
+        }
+        iframe.src = `https://docs.google.com/presentation/d/e/2PACX-1vQjySdmK_14lv1zTWGU6oM28pU9meXSvquHSFN2PwPVbD7fO65HuZv-lVH73-3KRA/embed?start=false&loop=false&slide=id.p${currentSlide}`;
+        updateProgressBar();
+    }
+
+    function updateProgressBar() {
+        const circles = document.querySelectorAll(".progress-circle");
+        circles.forEach((circle, index) => {
+            if (index === currentSlide) {
+                circle.style.backgroundColor = "#3498db"; // Active circle
+            } else {
+                circle.style.backgroundColor = "white"; // Inactive circle
+            }
+        });
+    }
+
+    // Initialize the progress bar on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        const progressBar = document.querySelector(".progress-bar");
+        for (let i = 0; i < totalSlides; i++) {
+            const circle = document.createElement("div");
+            circle.className = "progress-circle";
+            circle.style.cssText = "width: 10px; height: 10px; border-radius: 50%; margin: 0 4px; background-color: white; border: 2px solid #3498db;";
+            progressBar.appendChild(circle);
+        }
+        updateProgressBar();
+    });
+</script>
