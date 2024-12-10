@@ -1,67 +1,144 @@
-<div class="slide-container" style="position: relative; margin: auto; background-color: #e7dfdd; padding: 20px; width: 100%; max-width: 1920px; height: 100%; box-sizing: border-box;">
-    <!-- Google Slides iframe -->
-    <iframe id="google-slides" 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Slides Custom Navigation</title>
+    <style>
+        .slide-container {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .slide-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            z-index: 10;
+        }
+
+        .chevron {
+            background-color: rgba(0,0,255,0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 24px;
+            user-select: none;
+            transition: background-color 0.3s;
+        }
+
+        .chevron:hover {
+            background-color: rgba(0,0,255,0.7);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: white;
+            border: 2px solid blue;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .progress-dot.active {
+            background-color: blue;
+        }
+
+        .google-slide-iframe {
+            width: 100%;
+            max-width: 1000px;
+            height: 850px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="slide-navigation">
+            <button class="chevron prev-slide" onclick="navigateSlide(-1)">&#10094;</button>
+            <button class="chevron next-slide" onclick="navigateSlide(1)">&#10095;</button>
+        </div>
+
+        <iframe 
+            id="google-slides-iframe"
+            class="google-slide-iframe"
             src="https://docs.google.com/presentation/d/e/2PACX-1vQjySdmK_14lv1zTWGU6oM28pU9meXSvquHSFN2PwPVbD7fO65HuZv-lVH73-3KRA/embed?start=false&loop=false&delayms=3000" 
-            frameborder="0" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true" 
-            style="width: 100%; height: 100%; border: none; aspect-ratio: 16/9; display: block;">
-    </iframe>
+            allowfullscreen="true" 
+            mozallowfullscreen="true" 
+            webkitallowfullscreen="true">
+        </iframe>
 
-    <!-- Chevron Navigation -->
-    <div class="chevron chevron-left" onclick="navigateSlide('left')" 
-         style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); font-size: 2.5em; font-weight: bold; color: #3498db; cursor: pointer;">
-        &lt;
-    </div>
-    <div class="chevron chevron-right" onclick="navigateSlide('right')" 
-         style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); font-size: 2.5em; font-weight: bold; color: #3498db; cursor: pointer;">
-        &gt;
+        <div class="progress-bar" id="progress-dots">
+            <!-- Dots will be dynamically generated -->
+        </div>
     </div>
 
-    <!-- Progress Bar -->
-    <div class="progress-bar" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; justify-content: center; align-items: center;">
-        <!-- Example for 19 pages -->
-        <!-- Adjust the number of circles here based on the total number of slides -->
-        <div class="progress-circle" style="width: 10px; height: 10px; border-radius: 50%; margin: 0 4px; background-color: white; border: 2px solid #3498db;"></div>
-        <div class="progress-circle" style="width: 10px; height: 10px; border-radius: 50%; margin: 0 4px; background-color: white; border: 2px solid #3498db;"></div>
-        <!-- Repeat this structure for each slide -->
-    </div>
-</div>
+    <script>
+        // Get the Google Slides iframe
+        const iframe = document.getElementById('google-slides-iframe');
+        const progressDotsContainer = document.getElementById('progress-dots');
+        let currentSlide = 0;
 
-<script>
-    // JavaScript to navigate slides and update the progress bar
-    let currentSlide = 0;
-    const totalSlides = 19; // Update this to match the total number of slides
+        // Function to create progress dots
+        function createProgressDots() {
+            const totalSlides = 19; // Hardcoded to 19 as requested
+            progressDotsContainer.innerHTML = '';
 
-    function navigateSlide(direction) {
-        const iframe = document.getElementById("google-slides");
-        if (direction === "left" && currentSlide > 0) {
-            currentSlide--;
-        } else if (direction === "right" && currentSlide < totalSlides - 1) {
-            currentSlide++;
-        }
-        iframe.src = `https://docs.google.com/presentation/d/e/2PACX-1vQjySdmK_14lv1zTWGU6oM28pU9meXSvquHSFN2PwPVbD7fO65HuZv-lVH73-3KRA/embed?start=false&loop=false&slide=id.p${currentSlide}`;
-        updateProgressBar();
-    }
-
-    function updateProgressBar() {
-        const circles = document.querySelectorAll(".progress-circle");
-        circles.forEach((circle, index) => {
-            if (index === currentSlide) {
-                circle.style.backgroundColor = "#3498db"; // Active circle
-            } else {
-                circle.style.backgroundColor = "white"; // Inactive circle
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('progress-dot');
+                if (i === 0) dot.classList.add('active');
+                dot.setAttribute('data-slide', i);
+                dot.onclick = () => goToSlide(i);
+                progressDotsContainer.appendChild(dot);
             }
-        });
-    }
-
-    // Initialize the progress bar on page load
-    document.addEventListener("DOMContentLoaded", () => {
-        const progressBar = document.querySelector(".progress-bar");
-        for (let i = 0; i < totalSlides; i++) {
-            const circle = document.createElement("div");
-            circle.className = "progress-circle";
-            circle.style.cssText = "width: 10px; height: 10px; border-radius: 50%; margin: 0 4px; background-color: white; border: 2px solid #3498db;";
-            progressBar.appendChild(circle);
         }
-        updateProgressBar();
-    });
-</script>
+
+        // Function to navigate slides
+        function navigateSlide(direction) {
+            const slideNum = currentSlide + direction;
+            goToSlide(slideNum);
+        }
+
+        // Function to go to a specific slide
+        function goToSlide(slideNum) {
+            // Simplified slide navigation - you might need to adjust based on Google Slides API
+            iframe.contentWindow.postMessage(
+                JSON.stringify({
+                    "method": "goToSlide",
+                    "args": [slideNum]
+                }), 
+                "*"
+            );
+
+            // Update active dot
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach(dot => dot.classList.remove('active'));
+            if (dots[slideNum]) dots[slideNum].classList.add('active');
+
+            currentSlide = slideNum;
+        }
+
+        // Initialize progress dots when the page loads
+        window.addEventListener('load', createProgressDots);
+    </script>
+</body>
+</html>
