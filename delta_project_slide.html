@@ -92,16 +92,14 @@
     </div>
 
     <script>
-        // Get the Google Slides iframe
         const iframe = document.getElementById('google-slides-iframe');
         const progressDotsContainer = document.getElementById('progress-dots');
+        const totalSlides = 19;
         let currentSlide = 0;
 
-        // Function to create progress dots
+        // Create progress dots
         function createProgressDots() {
-            const totalSlides = 19; // Hardcoded to 19 as requested
             progressDotsContainer.innerHTML = '';
-
             for (let i = 0; i < totalSlides; i++) {
                 const dot = document.createElement('div');
                 dot.classList.add('progress-dot');
@@ -112,15 +110,19 @@
             }
         }
 
-        // Function to navigate slides
+        // Navigation functions
         function navigateSlide(direction) {
-            const slideNum = currentSlide + direction;
-            goToSlide(slideNum);
+            let newSlide = currentSlide + direction;
+            
+            // Implement wrap-around logic
+            if (newSlide < 0) newSlide = totalSlides - 1;
+            if (newSlide >= totalSlides) newSlide = 0;
+            
+            goToSlide(newSlide);
         }
 
-        // Function to go to a specific slide
         function goToSlide(slideNum) {
-            // Simplified slide navigation - you might need to adjust based on Google Slides API
+            // Send message to Google Slides to navigate
             iframe.contentWindow.postMessage(
                 JSON.stringify({
                     "method": "goToSlide",
@@ -129,13 +131,33 @@
                 "*"
             );
 
-            // Update active dot
+            // Update progress dots
             const dots = document.querySelectorAll('.progress-dot');
             dots.forEach(dot => dot.classList.remove('active'));
-            if (dots[slideNum]) dots[slideNum].classList.add('active');
+            dots[slideNum].classList.add('active');
 
             currentSlide = slideNum;
         }
+
+        // Listen for messages from the iframe to track current slide
+        window.addEventListener('message', function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                
+                // Check if this is a slide change event
+                if (data.method === 'onSlideChanged') {
+                    currentSlide = data.args[0];
+                    
+                    // Update progress dots
+                    const dots = document.querySelectorAll('.progress-dot');
+                    dots.forEach(dot => dot.classList.remove('active'));
+                    dots[currentSlide].classList.add('active');
+                }
+            } catch (error) {
+                // Silently catch any parsing errors
+                console.log('Message parsing error:', error);
+            }
+        });
 
         // Initialize progress dots when the page loads
         window.addEventListener('load', createProgressDots);
